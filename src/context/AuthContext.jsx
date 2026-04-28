@@ -1,3 +1,6 @@
+// ============================================
+// src/context/AuthContext.jsx
+// ============================================
 // This is the BRAIN of authentication.
 // It wraps the entire app and makes user data
 // available everywhere without prop drilling.
@@ -9,6 +12,7 @@
 //   - login()   → function to log in
 //   - logout()  → function to log out
 //   - signup()  → function to register
+// ============================================
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,21 +20,21 @@ import toast from "react-hot-toast";
 import supabase from "../supabaseClient";
 import { signIn, signOut, signUp, getProfile } from "../api/authApi";
 
-// The context object
+// Step 1: Create the context object
 // This is what other components will subscribe to
 const AuthContext = createContext({});
 
-// The Provider component
+// Step 2: Create the Provider component
 // This wraps the whole app in App.jsx
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
-  // STATE
+  // ── STATE ──────────────────────────────────
   const [user, setUser] = useState(null); // Supabase auth user object
   const [profile, setProfile] = useState(null); // Our profiles table row
   const [loading, setLoading] = useState(true); // True while checking session
 
-  // Fetch profile functioj
+  // ── FETCH PROFILE HELPER ───────────────────
   // Reusable function to load profile from DB
   const fetchProfile = async (userId) => {
     try {
@@ -43,12 +47,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // SESSION LISTENER
-  // runs once when the app loads.
-  // Supabase automatically checks localStorage for a saved session and restores it.
-  // onAuthStateChange runs whenever:
-  //   - the user logs in
-  //   - the user logs out
+  // ── SESSION LISTENER ───────────────────────
+  // This runs once when the app loads.
+  // Supabase automatically checks localStorage
+  // for a saved session and restores it.
+  // onAuthStateChange fires whenever:
+  //   - User logs in
+  //   - User logs out
   //   - Session expires
   useEffect(() => {
     // Get the current session on first load
@@ -62,14 +67,21 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for future auth changes (login/logout)
+    // NOTE: We do NOT call fetchProfile here on SIGNED_IN because
+    // login() already calls it explicitly. Calling it here too would
+    // trigger a 3rd redundant network round-trip on every login.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        await fetchProfile(session.user.id);
+        // Only re-fetch profile for token refreshes or if switching users,
+        // not for SIGNED_IN (login() already fetched it).
+        if (event !== "SIGNED_IN") {
+          await fetchProfile(session.user.id);
+        }
       } else {
-        // When the user logs out — clear everything
+        // User logged out — clear everything
         setUser(null);
         setProfile(null);
       }
@@ -80,22 +92,33 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // LOGIN FUNCTION
+  // ── LOGIN FUNCTION ─────────────────────────
   // Called from Login.jsx when form is submitted
   const login = async (email, password) => {
     try {
       setLoading(true);
       const data = await signIn(email, password);
-      const profileData = await fetchProfile(data.user.id);
 
-      toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
+      // Use user_metadata from the JWT for an immediate role-based redirect
+      // (no extra DB round-trip needed just to decide where to navigate)
+      const metaRole = data.user?.user_metadata?.role;
 
-      // Redirect based on role
-      if (profileData?.role === "admin") {
+      // Navigate right away — profile loads in the background
+      if (metaRole === "admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/home");
       }
+
+      // Fetch the full profile in the background (non-blocking)
+      // The onAuthStateChange SIGNED_IN skip means this is the only fetch
+      fetchProfile(data.user.id).then((profileData) => {
+        toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
+        // If the metadata role was wrong/missing, redirect now with the real role
+        if (profileData?.role === "admin" && metaRole !== "admin") {
+          navigate("/admin/dashboard");
+        }
+      });
     } catch (err) {
       toast.error(
         err.message || "Login failed. Please check your credentials.",
@@ -153,7 +176,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook for easy access
+// Step 3: Custom hook for easy access
 // Instead of: const { user } = useContext(AuthContext)
 // Components just do: const { user } = useAuth()
 export const useAuth = () => {

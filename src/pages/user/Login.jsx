@@ -1,11 +1,3 @@
-// ============================================
-// src/pages/user/Login.jsx
-// ============================================
-// Split-screen login page.
-// Left side: food hero image with overlay text
-// Right side: login form
-// ============================================
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, UtensilsCrossed } from "lucide-react";
@@ -42,7 +34,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── LEFT PANEL ── Food hero image */}
+      {/* ── LEFT SIDE ── Food hero image */}
       <div
         className="hidden lg:flex lg:w-1/2 relative bg-cover bg-center"
         style={{
@@ -196,14 +188,14 @@ const Login = () => {
           </form>
 
           {/* Divider */}
+          {/*
           <div className="my-6 flex items-center gap-3">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-gray-400 text-sm">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Demo credentials hint for lecturer/grader */}
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+           <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
             <p className="text-xs font-semibold text-orange-700 mb-2">
               Demo Credentials:
             </p>
@@ -217,10 +209,10 @@ const Login = () => {
                 <span className="font-mono">admin123</span>
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Link to signup */}
-          <p className="text-center text-gray-500 text-sm">
+          <p className="mt-6 text-center text-gray-500 text-sm">
             Don't have an account?{" "}
             <Link
               to="/signup"

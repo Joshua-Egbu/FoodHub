@@ -1,3 +1,6 @@
+// ============================================
+// src/routes/ProtectedRoute.jsx
+// ============================================
 // Wraps any route that requires login.
 // If user is NOT logged in → redirect to /login
 // If user IS logged in → show the page
@@ -10,7 +13,9 @@ import { useAuth } from "../context/AuthContext";
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  // While auth is being checked, show this
+  // While auth is being checked, show nothing
+  // This prevents a flash of the login page
+  // for users who are already logged in
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-amber-50">
@@ -27,15 +32,20 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // User is logged in render the actual page
+  // User is logged in — render the actual page
   return children;
 };
 
 export default ProtectedRoute;
 
+// ============================================
+// src/routes/AdminRoute.jsx
+// ============================================
 // Same as ProtectedRoute but also checks
 // if the user has the 'admin' role.
-// Regular users trying to access /admin get redirected back to /home
+// Regular users trying to access /admin
+// get redirected back to /home
+// ============================================
 
 export const AdminRoute = ({ children }) => {
   const { user, profile, loading } = useAuth();
