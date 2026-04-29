@@ -124,6 +124,7 @@ const Login = () => {
                 <input
                   type="email"
                   value={email}
+                  disabled={isLoading}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
@@ -145,6 +146,7 @@ const Login = () => {
                   // Toggle between text and password to show/hide
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  disabled={isLoading}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
