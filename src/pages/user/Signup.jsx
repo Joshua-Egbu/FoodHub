@@ -135,6 +135,7 @@ const Signup = () => {
                 <input
                   type="text"
                   value={fullName}
+                  disabled={isLoading}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
                   required
@@ -155,6 +156,7 @@ const Signup = () => {
                 <input
                   type="email"
                   value={email}
+                  disabled={isLoading}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
@@ -175,6 +177,7 @@ const Signup = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  disabled={isLoading}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
                   required
@@ -206,6 +209,7 @@ const Signup = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
+                  disabled={isLoading}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repeat your password"
                   required
