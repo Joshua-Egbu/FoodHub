@@ -29,6 +29,7 @@ import AdminLayout from "./components/layout/AdminLayout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/user/Login";
 import Signup from "./pages/user/Signup";
+import PublicRoute from "./components/PublicRoute";
 
 // ── USER PLACEHOLDER PAGES ─────────────────
 const Home = () => (
@@ -181,9 +182,30 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* PUBLIC — no layout */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <LandingPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            }
+          />
 
           {/* USER — UserLayout (navbar + footer) + ProtectedRoute */}
           <Route
