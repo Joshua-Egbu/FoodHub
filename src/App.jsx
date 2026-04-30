@@ -17,6 +17,7 @@ import { Toaster } from "react-hot-toast";
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 
 // Route guards
 import ProtectedRoute, { AdminRoute } from "./routes/ProtectedRoute";
@@ -29,7 +30,6 @@ import AdminLayout from "./components/layout/AdminLayout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/user/Login";
 import Signup from "./pages/user/Signup";
-import PublicRoute from "./components/PublicRoute";
 
 // ── USER PLACEHOLDER PAGES ─────────────────
 const Home = () => (
@@ -180,150 +180,133 @@ function App() {
       />
 
       <AuthProvider>
-        <Routes>
-          {/* PUBLIC — no layout */}
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <LandingPage />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <PublicRoute>
-                <Signup />
-              </PublicRoute>
-            }
-          />
+        {/* CartProvider is INSIDE AuthProvider so cart can
+            access user info if needed in the future */}
+        <CartProvider>
+          <Routes>
+            {/* PUBLIC — no layout */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-          {/* USER — UserLayout (navbar + footer) + ProtectedRoute */}
-          <Route
-            path="/home"
-            element={
-              <UserPage>
-                <Home />
-              </UserPage>
-            }
-          />
-          <Route
-            path="/restaurants"
-            element={
-              <UserPage>
-                <Restaurants />
-              </UserPage>
-            }
-          />
-          <Route
-            path="/restaurants/:id"
-            element={
-              <UserPage>
-                <div className="p-10 text-center text-gray-500">
-                  Restaurant Detail - Day 9
-                </div>
-              </UserPage>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <UserPage>
-                <Search />
-              </UserPage>
-            }
-          />
-          <Route
-            path="/cart"
-            element={
-              <UserPage>
-                <Cart />
-              </UserPage>
-            }
-          />
-          <Route
-            path="/checkout"
-            element={
-              <UserPage>
-                <div className="p-10 text-center text-gray-500">
-                  Checkout - Day 15
-                </div>
-              </UserPage>
-            }
-          />
-          <Route
-            path="/order-success"
-            element={
-              <UserPage>
-                <div className="p-10 text-center text-gray-500">
-                  Order Success - Day 17
-                </div>
-              </UserPage>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <UserPage>
-                <Profile />
-              </UserPage>
-            }
-          />
+            {/* USER — UserLayout (navbar + footer) + ProtectedRoute */}
+            <Route
+              path="/home"
+              element={
+                <UserPage>
+                  <Home />
+                </UserPage>
+              }
+            />
+            <Route
+              path="/restaurants"
+              element={
+                <UserPage>
+                  <Restaurants />
+                </UserPage>
+              }
+            />
+            <Route
+              path="/restaurants/:id"
+              element={
+                <UserPage>
+                  <div className="p-10 text-center text-gray-500">
+                    Restaurant Detail - Day 9
+                  </div>
+                </UserPage>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <UserPage>
+                  <Search />
+                </UserPage>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <UserPage>
+                  <Cart />
+                </UserPage>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <UserPage>
+                  <div className="p-10 text-center text-gray-500">
+                    Checkout - Day 15
+                  </div>
+                </UserPage>
+              }
+            />
+            <Route
+              path="/order-success"
+              element={
+                <UserPage>
+                  <div className="p-10 text-center text-gray-500">
+                    Order Success - Day 17
+                  </div>
+                </UserPage>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <UserPage>
+                  <Profile />
+                </UserPage>
+              }
+            />
 
-          {/* ADMIN — AdminLayout (dark navbar + sidebar) + AdminRoute */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminPage>
-                <AdminDashboard />
-              </AdminPage>
-            }
-          />
-          <Route
-            path="/admin/restaurants"
-            element={
-              <AdminPage>
-                <ManageRestaurants />
-              </AdminPage>
-            }
-          />
-          <Route
-            path="/admin/menu"
-            element={
-              <AdminPage>
-                <ManageMenu />
-              </AdminPage>
-            }
-          />
-          <Route
-            path="/admin/reviews"
-            element={
-              <AdminPage>
-                <ManageReviews />
-              </AdminPage>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <AdminPage>
-                <ManageUsers />
-              </AdminPage>
-            }
-          />
+            {/* ADMIN — AdminLayout (dark navbar + sidebar) + AdminRoute */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminPage>
+                  <AdminDashboard />
+                </AdminPage>
+              }
+            />
+            <Route
+              path="/admin/restaurants"
+              element={
+                <AdminPage>
+                  <ManageRestaurants />
+                </AdminPage>
+              }
+            />
+            <Route
+              path="/admin/menu"
+              element={
+                <AdminPage>
+                  <ManageMenu />
+                </AdminPage>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <AdminPage>
+                  <ManageReviews />
+                </AdminPage>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminPage>
+                  <ManageUsers />
+                </AdminPage>
+              }
+            />
 
-          {/* 404 */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* 404 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
       </AuthProvider>
     </>
   );

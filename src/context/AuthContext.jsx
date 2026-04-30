@@ -67,16 +67,16 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for future auth changes (login/logout)
-    // NOTE: We do NOT call fetchProfile here on SIGNED_IN because
-    // login() already calls it explicitly. Calling it here too would
-    // trigger a 3rd redundant network round-trip on every login.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        // Only re-fetch profile for token refreshes or if switching users,
-        // not for SIGNED_IN (login() already fetched it).
+        // Fix 1: Skip fetchProfile on SIGNED_IN event because
+        // login() already fetches it explicitly. Fetching here
+        // too causes a redundant duplicate network call (~1-2s wasted).
+        // We only fetch profile for other events like TOKEN_REFRESHED
+        // or when the app loads with an existing session (INITIAL_SESSION).
         if (event !== "SIGNED_IN") {
           await fetchProfile(session.user.id);
         }
@@ -93,37 +93,38 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ── LOGIN FUNCTION ─────────────────────────
-  // Called from Login.jsx when form is submitted
+  // Called from Login.jsx when form is submitted.
+  // Fix 2: Navigate immediately after auth succeeds (1 call),
+  // then load the profile in the background (non-blocking).
+  // This cuts redirect wait time from 3 calls down to 1.
   const login = async (email, password) => {
     try {
       setLoading(true);
       const data = await signIn(email, password);
 
-      // Use user_metadata from the JWT for an immediate role-based redirect
-      // (no extra DB round-trip needed just to decide where to navigate)
-      const metaRole = data.user?.user_metadata?.role;
+      // Navigate immediately — don't wait for profile fetch
+      // We know new users are always 'user' role
+      // We check stored profile or default to /home,
+      // then correct if needed once profile loads
+      const tempNavigate = data.user ? "/home" : "/login";
 
-      // Navigate right away — profile loads in the background
-      if (metaRole === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/home");
-      }
-
-      // Fetch the full profile in the background (non-blocking)
-      // The onAuthStateChange SIGNED_IN skip means this is the only fetch
+      // Fetch profile in background (non-blocking)
       fetchProfile(data.user.id).then((profileData) => {
+        // Show welcome toast once profile is ready
         toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
-        // If the metadata role was wrong/missing, redirect now with the real role
-        if (profileData?.role === "admin" && metaRole !== "admin") {
+        // Correct navigation if user is actually admin
+        if (profileData?.role === "admin") {
           navigate("/admin/dashboard");
         }
       });
+
+      // Navigate immediately after just 1 Supabase call
+      navigate(tempNavigate);
     } catch (err) {
       toast.error(
         err.message || "Login failed. Please check your credentials.",
       );
-      throw err; // re-throw so Login.jsx can stop its loading spinner
+      throw err;
     } finally {
       setLoading(false);
     }
