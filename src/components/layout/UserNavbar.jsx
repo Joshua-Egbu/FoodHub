@@ -18,6 +18,8 @@ import {
   ChevronDown,
   Menu,
   X,
+  Home,
+  Store,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import useCart from "../../hooks/useCart";
@@ -50,14 +52,24 @@ const UserNavbar = () => {
         : "text-gray-600 hover:text-orange-500"
     }`;
 
+  // Mobile nav link style
+  const mobileNavLinkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+      isActive
+        ? "bg-orange-50 text-orange-500"
+        : "text-gray-700 hover:bg-orange-50 hover:text-orange-500"
+    }`;
+
   const handleLogout = async () => {
     setDropdownOpen(false);
+    setMobileOpen(false);
     await logout();
   };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      {/* ── MAIN BAR ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* ── LOGO ── */}
         <Link to="/home" className="flex items-center gap-2 flex-shrink-0">
           <UtensilsCrossed className="w-7 h-7 text-orange-500" />
@@ -85,7 +97,7 @@ const UserNavbar = () => {
           </NavLink>
         </div>
 
-        {/* ── RIGHT SIDE: Cart + Avatar ── */}
+        {/* ── RIGHT SIDE: Cart + Avatar (desktop) ── */}
         <div className="hidden md:flex items-center gap-4">
           {/* Cart icon */}
           <Link
@@ -93,13 +105,11 @@ const UserNavbar = () => {
             className="relative p-2 text-gray-600 hover:text-orange-500 transition-colors"
           >
             <ShoppingCart className="w-6 h-6" />
-            {/* Cart badge — real count from CartContext */}
             {cartCount > 0 && (
               <span
                 className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white
                                text-xs font-bold rounded-full flex items-center justify-center"
               >
-                {/* Cap display at 99 so badge doesn't overflow */}
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             )}
@@ -111,7 +121,6 @@ const UserNavbar = () => {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-orange-50 transition-colors"
             >
-              {/* Avatar circle — shows initials if no photo */}
               <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center overflow-hidden">
                 {profile?.avatar_url ? (
                   <img
@@ -167,65 +176,121 @@ const UserNavbar = () => {
           </div>
         </div>
 
-        {/* ── MOBILE HAMBURGER ── */}
-        <button
-          className="md:hidden p-2 text-gray-600 hover:text-orange-500 transition-colors"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
-        </button>
-      </div>
-
-      {/* ── MOBILE MENU ── */}
-      {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-4">
-          <NavLink
-            to="/home"
-            className={navLinkClass}
-            onClick={() => setMobileOpen(false)}
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/restaurants"
-            className={navLinkClass}
-            onClick={() => setMobileOpen(false)}
-          >
-            Restaurants
-          </NavLink>
-          <NavLink
-            to="/search"
-            className={navLinkClass}
-            onClick={() => setMobileOpen(false)}
-          >
-            Search
-          </NavLink>
-          <NavLink
+        {/* ── MOBILE: Cart badge + Hamburger ── */}
+        <div className="flex items-center gap-1 md:hidden">
+          <Link
             to="/cart"
-            className={navLinkClass}
+            className="relative p-2 text-gray-600 hover:text-orange-500 transition-colors"
             onClick={() => setMobileOpen(false)}
           >
-            Cart
-          </NavLink>
-          <NavLink
-            to="/profile"
-            className={navLinkClass}
-            onClick={() => setMobileOpen(false)}
-          >
-            Profile
-          </NavLink>
+            <ShoppingCart className="w-6 h-6" />
+            {cartCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white
+                               text-xs font-bold rounded-full flex items-center justify-center"
+              >
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </Link>
+
           <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+            className="p-2 rounded-xl text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-all"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
           >
-            Logout
+            {mobileOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
-      )}
+      </div>
+
+      {/* ── MOBILE SLIDE-DOWN MENU ── */}
+      <div
+        style={{
+          maxHeight: mobileOpen ? "500px" : "0px",
+          overflow: "hidden",
+          transition: "max-height 0.35s cubic-bezier(0.4,0,0.2,1)",
+        }}
+        className="md:hidden"
+      >
+        <div className="bg-white border-t border-gray-100">
+          {/* User info header */}
+          <div className="flex items-center gap-3 px-6 py-4 bg-orange-50 border-b border-orange-100">
+            <div className="w-11 h-11 rounded-full bg-orange-500 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md shadow-orange-200">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-white text-lg font-bold">
+                  {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
+                </span>
+              )}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {profile?.full_name || "User"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+            </div>
+          </div>
+
+          {/* Nav links */}
+          <div className="px-4 py-3 flex flex-col gap-1">
+            <NavLink
+              to="/home"
+              className={mobileNavLinkClass}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </NavLink>
+            <NavLink
+              to="/restaurants"
+              className={mobileNavLinkClass}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Store className="w-4 h-4" />
+              Restaurants
+            </NavLink>
+            <NavLink
+              to="/search"
+              className={mobileNavLinkClass}
+              onClick={() => setMobileOpen(false)}
+            >
+              <Search className="w-4 h-4" />
+              Search
+            </NavLink>
+            <NavLink
+              to="/profile"
+              className={mobileNavLinkClass}
+              onClick={() => setMobileOpen(false)}
+            >
+              <User className="w-4 h-4" />
+              My Profile
+            </NavLink>
+
+            {/* Divider */}
+            <div className="my-1 border-t border-gray-100" />
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+                         text-red-500 hover:bg-red-50 transition-all duration-200 w-full"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
     </nav>
   );
 };

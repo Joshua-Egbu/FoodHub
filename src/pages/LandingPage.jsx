@@ -9,6 +9,8 @@ import {
   MapPin,
   Truck,
   Heart,
+  Menu,
+  X,
 } from "lucide-react";
 
 // STATS DATA
@@ -63,6 +65,7 @@ const heroImages = [
 ];
 
 const LandingPage = () => {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
   // Auto-cycle hero background images every 4 seconds
@@ -76,7 +79,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-amber-50 font-sans">
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-orange-100 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-orange-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -111,8 +114,8 @@ const LandingPage = () => {
             </a>
           </div>
 
-          {/* Auth buttons */}
-          <div className="flex items-center gap-3">
+          {/* Auth buttons — desktop only */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
               to="/login"
               className="px-5 py-2 text-sm font-semibold text-orange-500 border-2 border-orange-500
@@ -123,6 +126,78 @@ const LandingPage = () => {
             <Link
               to="/signup"
               className="px-5 py-2 text-sm font-semibold text-white bg-orange-500
+                         rounded-xl hover:bg-orange-600 transition-all duration-200 shadow-md shadow-orange-200"
+            >
+              Sign Up
+            </Link>
+          </div>
+
+          {/* Hamburger — mobile only */}
+          <button
+            className="md:hidden p-2 rounded-xl text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-all"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileNavOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+
+        {/* ── MOBILE DROPDOWN MENU ── */}
+        <div
+          style={{
+            maxHeight: mobileNavOpen ? "400px" : "0px",
+            overflow: "hidden",
+            transition: "max-height 0.35s cubic-bezier(0.4,0,0.2,1)",
+          }}
+          className="md:hidden"
+        >
+          <div className="px-6 pb-6 pt-2 bg-white border-t border-orange-100 flex flex-col gap-1">
+            {/* Nav links */}
+            <a
+              href="#features"
+              onClick={() => setMobileNavOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 font-medium
+                         hover:bg-orange-50 hover:text-orange-500 transition-all duration-200"
+            >
+              Features
+            </a>
+            <a
+              href="#cuisines"
+              onClick={() => setMobileNavOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 font-medium
+                         hover:bg-orange-50 hover:text-orange-500 transition-all duration-200"
+            >
+              Cuisines
+            </a>
+            <a
+              href="#how-it-works"
+              onClick={() => setMobileNavOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 font-medium
+                         hover:bg-orange-50 hover:text-orange-500 transition-all duration-200"
+            >
+              How it works
+            </a>
+
+            {/* Divider */}
+            <div className="my-2 border-t border-gray-100" />
+
+            {/* Auth buttons */}
+            <Link
+              to="/login"
+              onClick={() => setMobileNavOpen(false)}
+              className="w-full text-center px-5 py-3 text-sm font-semibold text-orange-500
+                         border-2 border-orange-500 rounded-xl hover:bg-orange-50 transition-all duration-200"
+            >
+              Log In
+            </Link>
+            <Link
+              to="/signup"
+              onClick={() => setMobileNavOpen(false)}
+              className="w-full text-center px-5 py-3 text-sm font-semibold text-white bg-orange-500
                          rounded-xl hover:bg-orange-600 transition-all duration-200 shadow-md shadow-orange-200"
             >
               Sign Up
@@ -417,9 +492,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════ */}
+      {/* FOOTER */}
       <footer className="bg-gray-900 text-gray-400 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
