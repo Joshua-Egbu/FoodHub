@@ -31,18 +31,10 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/user/Login";
 import Signup from "./pages/user/Signup";
 
+// User pages
+import Home from "./pages/user/Home";
+
 // ── USER PLACEHOLDER PAGES ─────────────────
-const Home = () => (
-  <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-    <h1
-      className="text-3xl font-bold text-gray-800"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      🍔 Home Page
-    </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 6</p>
-  </div>
-);
 const Restaurants = () => (
   <div className="max-w-7xl mx-auto px-6 py-16 text-center">
     <h1
