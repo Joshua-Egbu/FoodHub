@@ -33,19 +33,10 @@ import Signup from "./pages/user/Signup";
 
 // User pages
 import Home from "./pages/user/Home";
+import RestaurantList from "./pages/user/RestaurantList";
+import RestaurantDetail from "./pages/user/RestaurantDetail";
 
 // ── USER PLACEHOLDER PAGES ─────────────────
-const Restaurants = () => (
-  <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-    <h1
-      className="text-3xl font-bold text-gray-800"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      🍽️ Restaurant List
-    </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 8</p>
-  </div>
-);
 const Search = () => (
   <div className="max-w-7xl mx-auto px-6 py-16 text-center">
     <h1
@@ -194,7 +185,7 @@ function App() {
               path="/restaurants"
               element={
                 <UserPage>
-                  <Restaurants />
+                  <RestaurantList />
                 </UserPage>
               }
             />
@@ -202,9 +193,7 @@ function App() {
               path="/restaurants/:id"
               element={
                 <UserPage>
-                  <div className="p-10 text-center text-gray-500">
-                    Restaurant Detail - Day 9
-                  </div>
+                  <RestaurantDetail />
                 </UserPage>
               }
             />
