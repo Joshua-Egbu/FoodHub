@@ -116,7 +116,61 @@ const RestaurantDetail = () => {
     fetchData();
   }, [id]);
 
-  // ── HANDLE NEW REVIEW ───────────────────────
+  // ── HANDLE CATEGORY CLICK ───────────────────
+  // Sets the active category AND scrolls to it
+  // offsetTop accounts for the fixed navbar height (80px)
+  // plus a little extra breathing room (16px)
+  const handleCategoryClick = (cat) => {
+    setActiveCategory(cat);
+
+    const element = document.getElementById(`category-${cat}`);
+    if (element) {
+      const navbarHeight = 80 + 16; // fixed navbar + padding
+      const elementTop = element.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementTop - navbarHeight,
+        behavior: "smooth", // smooth animated scroll
+      });
+    }
+  };
+
+  // ── AUTO-HIGHLIGHT ACTIVE CATEGORY ON SCROLL ─
+  // Uses IntersectionObserver to watch each category
+  // section. When a section enters the viewport,
+  // its pill becomes active automatically.
+  // This makes scrolling and clicking feel connected.
+  useEffect(() => {
+    if (!menuItems.length) return;
+
+    const grouped = groupByCategory(menuItems);
+    const cats = Object.keys(grouped);
+    const observers = [];
+
+    cats.forEach((cat) => {
+      const el = document.getElementById(`category-${cat}`);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          // When section enters viewport update the active pill
+          if (entry.isIntersecting) {
+            setActiveCategory(cat);
+          }
+        },
+        {
+          // Triggers when element crosses the top 20% of viewport
+          rootMargin: "-80px 0px -60% 0px",
+          threshold: 0,
+        },
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    // Cleanup all observers when component unmounts
+    return () => observers.forEach((obs) => obs.disconnect());
+  }, [menuItems]);
   // Called by AddReviewForm after successful submit
   // Adds the new review to the top of the list
   // without making another network request
@@ -262,7 +316,7 @@ const RestaurantDetail = () => {
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={() => handleCategoryClick(cat)}
                     className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
                                transition-all duration-200 whitespace-nowrap ${
                                  activeCategory === cat
