@@ -504,9 +504,7 @@ const LandingPage = () => {
               FoodHub
             </span>
           </div>
-          <p className="text-sm">
-            © 2025 FoodHub. Built with ❤️ for CSC project.
-          </p>
+          <p className="text-sm">© 2025 FoodHub. Built by J-D.</p>
           <div className="flex gap-6 text-sm">
             <Link
               to="/login"

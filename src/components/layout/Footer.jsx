@@ -93,8 +93,8 @@ const Footer = () => {
           </p>
           <p className="text-xs text-gray-600 flex items-center gap-1">
             Built with{" "}
-            <Heart className="w-3 h-3 text-orange-500 fill-orange-500" /> for
-            CSC Project
+            <Heart className="w-3 h-3 text-orange-500 fill-orange-500" /> by
+            J-D.
           </p>
         </div>
       </div>
