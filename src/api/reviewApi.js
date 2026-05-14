@@ -1,17 +1,19 @@
-// ← getByRestaurant, addReview, deleteReview
 // ============================================
 // src/api/reviewApi.js
 // ============================================
 // All review-related Supabase calls.
-// Reviews belong to a restaurant and a user.
+//
+// Reviews table structure:
+//   id, restaurant_id, user_id, rating,
+//   comment, created_at
 // ============================================
 
 import supabase from "../supabaseClient";
 
 // ── GET REVIEWS BY RESTAURANT ───────────────
-// Fetches all reviews for a specific restaurant
-// Joins with profiles table to get reviewer name
-// Orders newest first
+// Fetches all reviews for one restaurant.
+// Joins with profiles to get reviewer's name.
+// Used on Restaurant Detail page.
 export const getReviewsByRestaurant = async (restaurantId) => {
   const { data, error } = await supabase
     .from("reviews")
@@ -29,20 +31,15 @@ export const getReviewsByRestaurant = async (restaurantId) => {
 };
 
 // ── ADD REVIEW ──────────────────────────────
-// Inserts a new review row into the reviews table
-// Also updates the restaurant's average rating
-export const addReview = async (restaurantId, userId, rating, comment) => {
-  // Step 1: Insert the review
+// Inserts a new review row.
+// Called from AddReviewForm on Restaurant Detail.
+//
+// reviewData shape:
+// { restaurant_id, user_id, rating, comment }
+export const addReview = async (reviewData) => {
   const { data, error } = await supabase
     .from("reviews")
-    .insert([
-      {
-        restaurant_id: restaurantId,
-        user_id: userId,
-        rating,
-        comment,
-      },
-    ])
+    .insert([reviewData])
     .select(
       `
       *,
@@ -52,28 +49,12 @@ export const addReview = async (restaurantId, userId, rating, comment) => {
     .single();
 
   if (error) throw error;
-
-  // Step 2: Recalculate and update restaurant average rating
-  // We do this after every new review so rating stays current
-  const { data: avgData } = await supabase
-    .from("reviews")
-    .select("rating")
-    .eq("restaurant_id", restaurantId);
-
-  if (avgData && avgData.length > 0) {
-    const avg = avgData.reduce((sum, r) => sum + r.rating, 0) / avgData.length;
-    await supabase
-      .from("restaurants")
-      .update({ rating: Math.round(avg * 10) / 10 }) // round to 1 decimal
-      .eq("id", restaurantId);
-  }
-
   return data;
 };
 
 // ── DELETE REVIEW ───────────────────────────
-// Admin only — permanently removes a review
-// Called from the admin reviews management page
+// Admin only — hard deletes a review.
+// Used on Manage Reviews admin page.
 export const deleteReview = async (reviewId) => {
   const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
 
@@ -81,20 +62,46 @@ export const deleteReview = async (reviewId) => {
 };
 
 // ── GET ALL REVIEWS ─────────────────────────
-// Admin only — fetches every review across all restaurants
-// Joins restaurant name and reviewer name for display
+// Admin only — gets every review across all restaurants.
+// Joins restaurant name and reviewer name for display.
 export const getAllReviews = async () => {
   const { data, error } = await supabase
     .from("reviews")
     .select(
       `
       *,
-      profiles (full_name),
-      restaurants (name)
+      restaurants (name),
+      profiles (full_name)
     `,
     )
     .order("created_at", { ascending: false });
 
   if (error) throw error;
   return data;
+};
+
+// ── UPDATE RESTAURANT RATING ─────────────────
+// Recalculates and updates the restaurant's
+// average rating after a new review is added.
+// Called internally after addReview succeeds.
+export const updateRestaurantRating = async (restaurantId) => {
+  // Get all ratings for this restaurant
+  const { data: reviews, error: fetchError } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("restaurant_id", restaurantId);
+
+  if (fetchError) throw fetchError;
+
+  // Calculate new average
+  const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const rounded = Math.round(avg * 10) / 10; // round to 1 decimal
+
+  // Update the restaurant's rating column
+  const { error: updateError } = await supabase
+    .from("restaurants")
+    .update({ rating: rounded })
+    .eq("id", restaurantId);
+
+  if (updateError) throw updateError;
 };

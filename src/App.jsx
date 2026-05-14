@@ -6,9 +6,9 @@
 // never need to import Navbar or Footer.
 //
 // Pattern:
-//   Public pages   → no layout (Login, Signup, Landing)
-//   User pages     → wrapped in <UserLayout>
-//   Admin pages    → wrapped in <AdminLayout>
+//   Public pages   → no layout
+//   User pages     → wrapped in UserLayout
+//   Admin pages    → wrapped in AdminLayout
 // ============================================
 
 import React from "react";
@@ -26,37 +26,40 @@ import ProtectedRoute, { AdminRoute } from "./routes/ProtectedRoute";
 import UserLayout from "./components/layout/UserLayout";
 import AdminLayout from "./components/layout/AdminLayout";
 
-// Public pages
+// ── PUBLIC PAGES ────────────────────────────
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/user/Login";
 import Signup from "./pages/user/Signup";
 
-// User pages
+// ── USER PAGES (real components) ────────────
 import Home from "./pages/user/Home";
 import RestaurantList from "./pages/user/RestaurantList";
 import RestaurantDetail from "./pages/user/RestaurantDetail";
+// import Search from "./pages/user/Search";
+import Cart from "./pages/user/Cart";
 
-// ── USER PLACEHOLDER PAGES ─────────────────
-const Search = () => (
+// ── USER PAGES (placeholders — replaced day by day) ──
+
+const Checkout = () => (
   <div className="max-w-7xl mx-auto px-6 py-16 text-center">
     <h1
       className="text-3xl font-bold text-gray-800"
       style={{ fontFamily: "Playfair Display, serif" }}
     >
-      🔍 Search
+      💳 Checkout
     </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 13</p>
+    <p className="text-gray-500 mt-2">Coming in Day 9</p>
   </div>
 );
-const Cart = () => (
+const OrderSuccess = () => (
   <div className="max-w-7xl mx-auto px-6 py-16 text-center">
     <h1
       className="text-3xl font-bold text-gray-800"
       style={{ fontFamily: "Playfair Display, serif" }}
     >
-      🛒 Cart
+      ✅ Order Success
     </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 11</p>
+    <p className="text-gray-500 mt-2">Coming in Day 10</p>
   </div>
 );
 const Profile = () => (
@@ -67,11 +70,11 @@ const Profile = () => (
     >
       👤 Profile
     </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 18</p>
+    <p className="text-gray-500 mt-2">Coming in Day 11</p>
   </div>
 );
 
-// ── ADMIN PLACEHOLDER PAGES ────────────────
+// ── ADMIN PLACEHOLDER PAGES ─────────────────
 const AdminDashboard = () => (
   <div className="text-center py-16">
     <h1
@@ -80,7 +83,7 @@ const AdminDashboard = () => (
     >
       📊 Admin Dashboard
     </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 20</p>
+    <p className="text-gray-400 mt-2">Coming in Day 12</p>
   </div>
 );
 const ManageRestaurants = () => (
@@ -91,7 +94,7 @@ const ManageRestaurants = () => (
     >
       🍽️ Manage Restaurants
     </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 22</p>
+    <p className="text-gray-400 mt-2">Coming in Day 13</p>
   </div>
 );
 const ManageMenu = () => (
@@ -102,7 +105,7 @@ const ManageMenu = () => (
     >
       🍔 Manage Menu Items
     </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 23</p>
+    <p className="text-gray-400 mt-2">Coming in Day 14</p>
   </div>
 );
 const ManageReviews = () => (
@@ -113,7 +116,7 @@ const ManageReviews = () => (
     >
       ⭐ Manage Reviews
     </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 24</p>
+    <p className="text-gray-400 mt-2">Coming in Day 15</p>
   </div>
 );
 const ManageUsers = () => (
@@ -124,14 +127,12 @@ const ManageUsers = () => (
     >
       👥 Manage Users
     </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 25</p>
+    <p className="text-gray-400 mt-2">Coming in Day 16</p>
   </div>
 );
 
-// ── LAYOUT HELPERS ─────────────────────────
-// These keep the Routes section clean.
-// Instead of repeating ProtectedRoute + UserLayout
-// on every single route, we just use <UserPage>
+// ── LAYOUT HELPERS ──────────────────────────
+// Keeps route definitions clean and readable
 const UserPage = ({ children }) => (
   <ProtectedRoute>
     <UserLayout>{children}</UserLayout>
@@ -163,16 +164,14 @@ function App() {
       />
 
       <AuthProvider>
-        {/* CartProvider is INSIDE AuthProvider so cart can
-            access user info if needed in the future */}
         <CartProvider>
           <Routes>
-            {/* PUBLIC — no layout */}
+            {/* ── PUBLIC ── */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            {/* USER — UserLayout (navbar + footer) + ProtectedRoute */}
+            {/* ── USER ── */}
             <Route
               path="/home"
               element={
@@ -199,11 +198,7 @@ function App() {
             />
             <Route
               path="/search"
-              element={
-                <UserPage>
-                  <Search />
-                </UserPage>
-              }
+              element={<UserPage>{/* <Search /> */}</UserPage>}
             />
             <Route
               path="/cart"
@@ -217,9 +212,7 @@ function App() {
               path="/checkout"
               element={
                 <UserPage>
-                  <div className="p-10 text-center text-gray-500">
-                    Checkout - Day 15
-                  </div>
+                  <Checkout />
                 </UserPage>
               }
             />
@@ -227,9 +220,7 @@ function App() {
               path="/order-success"
               element={
                 <UserPage>
-                  <div className="p-10 text-center text-gray-500">
-                    Order Success - Day 17
-                  </div>
+                  <OrderSuccess />
                 </UserPage>
               }
             />
@@ -242,7 +233,7 @@ function App() {
               }
             />
 
-            {/* ADMIN — AdminLayout (dark navbar + sidebar) + AdminRoute */}
+            {/* ── ADMIN ── */}
             <Route
               path="/admin/dashboard"
               element={
@@ -284,7 +275,7 @@ function App() {
               }
             />
 
-            {/* 404 */}
+            {/* ── 404 ── */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </CartProvider>
