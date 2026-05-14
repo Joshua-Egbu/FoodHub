@@ -12,7 +12,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { createPortal } from "react-dom";
 import {
   ShoppingCart,
   Trash2,
@@ -44,6 +45,7 @@ const Cart = () => {
   // We fetch the restaurant to get its delivery fee
   const [restaurant, setRestaurant] = useState(null);
   const [loadingRestaurant, setLoadingRestaurant] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   // ── FETCH RESTAURANT FOR DELIVERY FEE ───────
   // We need the delivery fee from the restaurant
@@ -77,66 +79,13 @@ const Cart = () => {
     navigate("/checkout");
   };
 
-  // ── HANDLE CLEAR CART WITH TOAST CONFIRMATION ─
-  const handleClearCart = () => {
-    toast(
-      (t) => (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <p style={{ margin: 0, fontWeight: 600, color: "#1f2937" }}>
-            Clear your entire cart?
-          </p>
-          <p style={{ margin: 0, fontSize: "0.8rem", color: "#6b7280" }}>
-            This action cannot be undone.
-          </p>
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-                background: "#f9fafb",
-                color: "#374151",
-                fontWeight: 600,
-                fontSize: "0.8rem",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                clearCart();
-                toast.dismiss(t.id);
-                toast.success("Cart cleared!", { duration: 2000 });
-              }}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "8px",
-                border: "none",
-                background: "#ef4444",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "0.8rem",
-                cursor: "pointer",
-              }}
-            >
-              Yes, Clear
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: Infinity,
-        position: "top-center",
-        style: {
-          borderRadius: "14px",
-          padding: "16px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-          maxWidth: "320px",
-        },
-      }
-    );
+  // ── HANDLE CLEAR CART — opens centered modal ─
+  const handleClearCart = () => setShowClearModal(true);
+
+  const handleConfirmClear = () => {
+    clearCart();
+    setShowClearModal(false);
+    toast.success("Cart cleared!", { duration: 2000 });
   };
 
   // ── EMPTY CART STATE ─────────────────────────
@@ -177,7 +126,139 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-amber-50">
-      <Toaster />
+
+      {/* ── CLEAR CART CONFIRMATION MODAL ── */}
+      {showClearModal &&
+        createPortal(
+          <div
+            onClick={() => setShowClearModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              backgroundColor: "rgba(0,0,0,0.45)",
+              animation: "fadeIn 0.18s ease",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#fff",
+                borderRadius: "20px",
+                padding: "32px 28px",
+                maxWidth: "380px",
+                width: "90%",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.22)",
+                animation: "slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1)",
+                textAlign: "center",
+              }}
+            >
+              {/* Icon */}
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "#fef2f2",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 20px",
+                }}
+              >
+                <Trash2 style={{ width: 28, height: 28, color: "#ef4444" }} />
+              </div>
+
+              {/* Heading */}
+              <h2
+                style={{
+                  margin: "0 0 8px",
+                  fontSize: "1.2rem",
+                  fontWeight: 700,
+                  color: "#111827",
+                  fontFamily: "Playfair Display, serif",
+                }}
+              >
+                Clear entire cart?
+              </h2>
+
+              {/* Sub-text */}
+              <p
+                style={{
+                  margin: "0 0 28px",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                  lineHeight: 1.6,
+                }}
+              >
+                All items will be removed from your cart. This action cannot be
+                undone.
+              </p>
+
+              {/* Actions */}
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  onClick={() => setShowClearModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    border: "1.5px solid #e5e7eb",
+                    background: "#f9fafb",
+                    color: "#374151",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                  onMouseOut={(e) => (e.currentTarget.style.background = "#f9fafb")}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmClear}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    border: "none",
+                    background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 14px rgba(239,68,68,0.35)",
+                    transition: "transform 0.1s, box-shadow 0.1s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = "scale(1.03)";
+                    e.currentTarget.style.boxShadow = "0 6px 18px rgba(239,68,68,0.45)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px rgba(239,68,68,0.35)";
+                  }}
+                >
+                  Yes, Clear Cart
+                </button>
+              </div>
+            </div>
+
+            {/* Keyframe styles injected once */}
+            <style>{`
+              @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+              @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95) } to { opacity: 1; transform: translateY(0) scale(1) } }
+            `}</style>
+          </div>,
+          document.body
+        )}
+
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* ── PAGE HEADER ── */}
         <div className="flex items-center gap-4 mb-8">
