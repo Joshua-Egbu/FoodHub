@@ -35,44 +35,13 @@ import Signup from "./pages/user/Signup";
 import Home from "./pages/user/Home";
 import RestaurantList from "./pages/user/RestaurantList";
 import RestaurantDetail from "./pages/user/RestaurantDetail";
-// import Search from "./pages/user/Search";
+import Search from "./pages/user/Search";
 import Cart from "./pages/user/Cart";
+import Checkout from "./pages/user/Checkout";
+import OrderSuccess from "./pages/user/OrderSuccess";
+import Profile from "./pages/user/Profile";
 
 // ── USER PAGES (placeholders — replaced day by day) ──
-
-const Checkout = () => (
-  <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-    <h1
-      className="text-3xl font-bold text-gray-800"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      💳 Checkout
-    </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 9</p>
-  </div>
-);
-const OrderSuccess = () => (
-  <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-    <h1
-      className="text-3xl font-bold text-gray-800"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      ✅ Order Success
-    </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 10</p>
-  </div>
-);
-const Profile = () => (
-  <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-    <h1
-      className="text-3xl font-bold text-gray-800"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      👤 Profile
-    </h1>
-    <p className="text-gray-500 mt-2">Coming in Day 11</p>
-  </div>
-);
 
 // ── ADMIN PLACEHOLDER PAGES ─────────────────
 const AdminDashboard = () => (
@@ -198,7 +167,11 @@ function App() {
             />
             <Route
               path="/search"
-              element={<UserPage>{/* <Search /> */}</UserPage>}
+              element={
+                <UserPage>
+                  <Search />
+                </UserPage>
+              }
             />
             <Route
               path="/cart"

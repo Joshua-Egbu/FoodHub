@@ -170,6 +170,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     signup,
+    setProfile,
     isAdmin: profile?.role === "admin", // convenient boolean
     isAuthenticated: !!user, // true if user is logged in
   };
