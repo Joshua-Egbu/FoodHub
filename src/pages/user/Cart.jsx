@@ -25,7 +25,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import useCart from "../../hooks/useCart";
-import { getRestaurantById } from "../../api/restaurantApi";
+import { getRestaurantDeliveryInfo } from "../../api/restaurantApi";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const Cart = () => {
     const fetchRestaurant = async () => {
       setLoadingRestaurant(true);
       try {
-        const data = await getRestaurantById(cartRestaurantId);
+        const data = await getRestaurantDeliveryInfo(cartRestaurantId);
         setRestaurant(data);
       } catch (err) {
         console.error("Could not load restaurant info:", err);

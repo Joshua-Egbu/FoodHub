@@ -31,7 +31,7 @@ import {
 import useCart from "../../hooks/useCart";
 import { useAuth } from "../../context/AuthContext";
 import { createOrder } from "../../api/orderApi";
-import { getRestaurantById } from "../../api/restaurantApi";
+import { getRestaurantDeliveryInfo } from "../../api/restaurantApi";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -74,10 +74,10 @@ const Checkout = () => {
       setLoadingRestaurant(false);
       return;
     }
-    const fetch = async () => {
+    const fetchDeliveryInfo = async () => {
       setLoadingRestaurant(true);
       try {
-        const data = await getRestaurantById(cartRestaurantId);
+        const data = await getRestaurantDeliveryInfo(cartRestaurantId);
         setRestaurant(data);
       } catch (err) {
         console.error("Could not load restaurant:", err);
@@ -85,7 +85,7 @@ const Checkout = () => {
         setLoadingRestaurant(false);
       }
     };
-    fetch();
+    fetchDeliveryInfo();
   }, [cartRestaurantId]);
 
   // ── FORM HANDLER ─────────────────────────────
@@ -117,7 +117,7 @@ const Checkout = () => {
       total_amount: grandTotal,
       delivery_address: `${form.address}, ${form.city}`,
       delivery_fee: deliveryFee,
-      payment_reference: paymentReference,
+      payment_ref: paymentReference,
       status: "confirmed",
     };
 
@@ -130,7 +130,18 @@ const Checkout = () => {
   // Paystack is loaded from CDN in public/index.html
   // so window.PaystackPop is available globally.
   const handlePayment = () => {
-    if (loadingRestaurant) return;
+    // Debug: log key state so we can see what's going on
+    console.log("[Checkout] handlePayment called");
+    console.log("[Checkout] loadingRestaurant:", loadingRestaurant);
+    console.log("[Checkout] PaystackPop available:", !!window.PaystackPop);
+    console.log("[Checkout] VITE_PAYSTACK_PUBLIC_KEY:", import.meta.env.VITE_PAYSTACK_PUBLIC_KEY);
+    console.log("[Checkout] user email:", user?.email);
+    console.log("[Checkout] grandTotal:", grandTotal);
+
+    if (loadingRestaurant) {
+      setError("Still loading restaurant info. Please wait a moment.");
+      return;
+    }
 
     const validationError = validateForm();
     if (validationError) {
@@ -148,68 +159,84 @@ const Checkout = () => {
       return;
     }
 
+    // Check key exists
+    if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+      setError("Paystack public key is missing. Check your .env file.");
+      setIsProcessing(false);
+      return;
+    }
+
     // Amount must be in KOBO (Naira × 100) for Paystack
     const amountInKobo = grandTotal * 100;
 
-    const handler = window.PaystackPop.setup({
-      // Your Paystack test public key from .env
-      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-      email: user.email,
-      amount: amountInKobo,
-      currency: "NGN",
-      ref: `FOODHUB-${Date.now()}`, // unique reference for this transaction
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Customer",
-            variable_name: "customer",
-            value: form.fullName,
-          },
-          { display_name: "Phone", variable_name: "phone", value: form.phone },
-          {
-            display_name: "Restaurant",
-            variable_name: "restaurant",
-            value: cartRestaurantName,
-          },
-        ],
-      },
-
-      // ── PAYMENT SUCCESS ────────────────────
-      // Paystack calls this when payment is confirmed
-      callback: async (response) => {
-        try {
-          // Save order to Supabase with the payment reference
-          const order = await saveOrder(response.reference);
-
-          // Clear the cart
-          clearCart();
-
-          // Navigate to success page with order details
-          navigate("/order-success", {
-            state: {
-              order,
-              restaurantName: cartRestaurantName,
-              deliveryAddress: `${form.address}, ${form.city}`,
+    try {
+      const handler = window.PaystackPop.setup({
+        // Your Paystack test public key from .env
+        key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+        email: user?.email || "guest@example.com",
+        amount: amountInKobo,
+        currency: "NGN",
+        ref: `FOODHUB-${Date.now()}`, // unique reference for this transaction
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Customer",
+              variable_name: "customer",
+              value: form.fullName,
             },
-          });
-        } catch (err) {
-          setError(
-            "Payment succeeded but order could not be saved. Please contact support.",
-          );
-          console.error("Order save error:", err);
-        } finally {
+            { display_name: "Phone", variable_name: "phone", value: form.phone },
+            {
+              display_name: "Restaurant",
+              variable_name: "restaurant",
+              value: cartRestaurantName,
+            },
+          ],
+        },
+
+        // ── PAYMENT SUCCESS ────────────────────
+        // Paystack calls this when payment is confirmed
+        callback: function(response) {
+          (async () => {
+            try {
+              // Save order to Supabase with the payment reference
+              const order = await saveOrder(response.reference);
+
+              // Clear the cart
+              clearCart();
+
+              // Navigate to success page with order details
+              navigate("/order-success", {
+                state: {
+                  order,
+                  restaurantName: cartRestaurantName,
+                  deliveryAddress: `${form.address}, ${form.city}`,
+                },
+              });
+            } catch (err) {
+              const detail = err?.message || err?.details || JSON.stringify(err);
+              setError(
+                `Payment succeeded but order could not be saved: ${detail}`,
+              );
+              console.error("Order save error:", JSON.stringify(err, null, 2));
+            } finally {
+              setIsProcessing(false);
+            }
+          })();
+        },
+
+        // ── PAYMENT CLOSED ─────────────────────
+        // User closed the Paystack popup without paying
+        onClose: () => {
           setIsProcessing(false);
-        }
-      },
+        },
+      });
 
-      // ── PAYMENT CLOSED ─────────────────────
-      // User closed the Paystack popup without paying
-      onClose: () => {
-        setIsProcessing(false);
-      },
-    });
-
-    handler.openIframe();
+      handler.openIframe();
+    } catch (err) {
+      console.error("Paystack Initialization Error:", err);
+      setError(`Failed to initialize payment: ${err.message}`);
+      setIsProcessing(false);
+    }
   };
 
   return (

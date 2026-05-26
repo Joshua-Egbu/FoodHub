@@ -20,7 +20,7 @@ import supabase from "../supabaseClient";
 // {
 //   user_id, restaurant_id, items,
 //   total_amount, delivery_address,
-//   delivery_fee, payment_reference
+//   delivery_fee, status
 // }
 export const createOrder = async (orderData) => {
   const { data, error } = await supabase
@@ -34,7 +34,16 @@ export const createOrder = async (orderData) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("[createOrder] Supabase error details:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
+    console.error("[createOrder] Data that was sent:", orderData);
+    throw error;
+  }
   return data;
 };
 

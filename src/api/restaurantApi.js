@@ -51,6 +51,22 @@ export const getTopRated = async () => {
   return data;
 };
 
+// ── GET DELIVERY INFO (lightweight) ─────────
+// Fetches only the fields needed for Cart / Checkout
+// (delivery_fee, delivery_time, name) — no joins.
+// Much faster than getRestaurantById which loads
+// all menu_items and reviews.
+export const getRestaurantDeliveryInfo = async (id) => {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("id, name, delivery_fee, delivery_time")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 // ── GET BY ID ───────────────────────────────
 // Fetches a single restaurant with its menu items and reviews
 // Used on the Restaurant Detail page (Day 9)

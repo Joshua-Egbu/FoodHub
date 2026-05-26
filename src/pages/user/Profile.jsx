@@ -223,6 +223,7 @@ const Profile = () => {
                 {/* Camera button overlay */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={savingProfile}
                   className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 hover:bg-orange-600
                              rounded-full flex items-center justify-center text-white
                              shadow-md transition-colors"
@@ -278,6 +279,7 @@ const Profile = () => {
                       name="full_name"
                       value={form.full_name}
                       onChange={handleChange}
+                      disabled={savingProfile}
                       placeholder="Your full name"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl
                                  focus:outline-none focus:ring-2 focus:ring-orange-400
@@ -318,6 +320,7 @@ const Profile = () => {
                       name="phone"
                       value={form.phone}
                       onChange={handleChange}
+                      disabled={savingProfile}
                       placeholder="08012345678"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl
                                  focus:outline-none focus:ring-2 focus:ring-orange-400
