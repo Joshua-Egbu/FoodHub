@@ -213,13 +213,7 @@ const Checkout = () => {
               clearCart();
 
               // Navigate to success page with order details
-              navigate("/order-success", {
-                state: {
-                  order,
-                  restaurantName: cartRestaurantName,
-                  deliveryAddress: `${form.address}, ${form.city}`,
-                },
-              });
+              window.location.href = `/order-success?ref=${response.reference}`;
             } catch (err) {
               setError(
                 "Payment succeeded but order could not be saved. Please contact support.",
