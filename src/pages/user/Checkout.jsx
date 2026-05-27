@@ -122,6 +122,7 @@ const Checkout = () => {
     };
 
     const order = await createOrder(orderData);
+
     return order;
   };
 
@@ -134,7 +135,10 @@ const Checkout = () => {
     console.log("[Checkout] handlePayment called");
     console.log("[Checkout] loadingRestaurant:", loadingRestaurant);
     console.log("[Checkout] PaystackPop available:", !!window.PaystackPop);
-    console.log("[Checkout] VITE_PAYSTACK_PUBLIC_KEY:", import.meta.env.VITE_PAYSTACK_PUBLIC_KEY);
+    console.log(
+      "[Checkout] VITE_PAYSTACK_PUBLIC_KEY:",
+      import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+    );
     console.log("[Checkout] user email:", user?.email);
     console.log("[Checkout] grandTotal:", grandTotal);
 
@@ -184,7 +188,11 @@ const Checkout = () => {
               variable_name: "customer",
               value: form.fullName,
             },
-            { display_name: "Phone", variable_name: "phone", value: form.phone },
+            {
+              display_name: "Phone",
+              variable_name: "phone",
+              value: form.phone,
+            },
             {
               display_name: "Restaurant",
               variable_name: "restaurant",
@@ -195,7 +203,7 @@ const Checkout = () => {
 
         // ── PAYMENT SUCCESS ────────────────────
         // Paystack calls this when payment is confirmed
-        callback: function(response) {
+        callback: function (response) {
           (async () => {
             try {
               // Save order to Supabase with the payment reference
@@ -213,11 +221,10 @@ const Checkout = () => {
                 },
               });
             } catch (err) {
-              const detail = err?.message || err?.details || JSON.stringify(err);
               setError(
-                `Payment succeeded but order could not be saved: ${detail}`,
+                "Payment succeeded but order could not be saved. Please contact support.",
               );
-              console.error("Order save error:", JSON.stringify(err, null, 2));
+              console.error("Order save error:", err);
             } finally {
               setIsProcessing(false);
             }
