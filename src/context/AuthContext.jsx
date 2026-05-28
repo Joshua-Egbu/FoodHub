@@ -100,26 +100,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
+
       const data = await signIn(email, password);
 
-      // Navigate immediately — don't wait for profile fetch
-      // We know new users are always 'user' role
-      // We check stored profile or default to /home,
-      // then correct if needed once profile loads
-      const tempNavigate = data.user ? "/home" : "/login";
+      // Fetch profile BEFORE navigation
+      const profileData = await fetchProfile(data.user.id);
 
-      // Fetch profile in background (non-blocking)
-      fetchProfile(data.user.id).then((profileData) => {
-        // Show welcome toast once profile is ready
-        toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
-        // Correct navigation if user is actually admin
-        if (profileData?.role === "admin") {
-          navigate("/admin/dashboard");
-        }
-      });
+      toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
 
-      // Navigate immediately after just 1 Supabase call
-      navigate(tempNavigate);
+      // Navigate based on actual role
+      if (profileData?.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       toast.error(
         err.message || "Login failed. Please check your credentials.",

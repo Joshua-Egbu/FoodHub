@@ -41,64 +41,12 @@ import Checkout from "./pages/user/Checkout";
 import OrderSuccess from "./pages/user/OrderSuccess";
 import Profile from "./pages/user/Profile";
 
-// ── USER PAGES (placeholders — replaced day by day) ──
-
-// ── ADMIN PLACEHOLDER PAGES ─────────────────
-const AdminDashboard = () => (
-  <div className="text-center py-16">
-    <h1
-      className="text-3xl font-bold text-white"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      📊 Admin Dashboard
-    </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 12</p>
-  </div>
-);
-const ManageRestaurants = () => (
-  <div className="text-center py-16">
-    <h1
-      className="text-3xl font-bold text-white"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      🍽️ Manage Restaurants
-    </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 13</p>
-  </div>
-);
-const ManageMenu = () => (
-  <div className="text-center py-16">
-    <h1
-      className="text-3xl font-bold text-white"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      🍔 Manage Menu Items
-    </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 14</p>
-  </div>
-);
-const ManageReviews = () => (
-  <div className="text-center py-16">
-    <h1
-      className="text-3xl font-bold text-white"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      ⭐ Manage Reviews
-    </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 15</p>
-  </div>
-);
-const ManageUsers = () => (
-  <div className="text-center py-16">
-    <h1
-      className="text-3xl font-bold text-white"
-      style={{ fontFamily: "Playfair Display, serif" }}
-    >
-      👥 Manage Users
-    </h1>
-    <p className="text-gray-400 mt-2">Coming in Day 16</p>
-  </div>
-);
+// ── ADMIN PAGES (real components) ────────────
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ManageRestaurants from "./pages/admin/ManageRestaurants";
+import ManageMenuItems from "./pages/admin/ManageMenuItems";
+import ManageReviews from "./pages/admin/ManageReviews";
+import ManageUsers from "./pages/admin/ManageUsers";
 
 // ── LAYOUT HELPERS ──────────────────────────
 // Keeps route definitions clean and readable
@@ -227,7 +175,7 @@ function App() {
               path="/admin/menu"
               element={
                 <AdminPage>
-                  <ManageMenu />
+                  <ManageMenuItems />
                 </AdminPage>
               }
             />
