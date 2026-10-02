@@ -85,7 +85,7 @@ export const getProfile = async (userId) => {
     .from("profiles") // from the profiles table
     .select("*") // select all columns
     .eq("id", userId) // where id matches the logged-in user
-    .single(); // we expect only one row back
+    .maybeSingle(); // a deleted profile is a valid missing result
 
   if (error) throw error;
   return data;

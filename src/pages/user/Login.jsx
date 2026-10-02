@@ -25,7 +25,11 @@ const Login = () => {
     } catch (err) {
       // login() already shows a toast, but we
       // also show inline error on the form
-      setError("Invalid email or password. Please try again.");
+      setError(
+        err.code === "PROFILE_NOT_FOUND"
+          ? err.message
+          : "Invalid email or password. Please try again.",
+      );
       console.log(err);
     } finally {
       setIsLoading(false);

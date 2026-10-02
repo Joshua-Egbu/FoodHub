@@ -37,14 +37,29 @@ export const AuthProvider = ({ children }) => {
   // ── FETCH PROFILE HELPER ───────────────────
   // Reusable function to load profile from DB
   const fetchProfile = async (userId) => {
+    const profileData = await getProfile(userId);
+    setProfile(profileData);
+    return profileData;
+  };
+
+  const clearSession = async () => {
     try {
-      const profileData = await getProfile(userId);
-      setProfile(profileData);
-      return profileData;
+      await signOut();
     } catch (err) {
-      console.error("Error fetching profile:", err);
-      return null;
+      console.error("Error clearing invalid session:", err);
     }
+    setUser(null);
+    setProfile(null);
+  };
+
+  const clearSessionAfterAuthEvent = () => {
+    setUser(null);
+    setProfile(null);
+    window.setTimeout(() => {
+      signOut().catch((err) =>
+        console.error("Error clearing invalid session:", err),
+      );
+    }, 0);
   };
 
   // ── SESSION LISTENER ───────────────────────
@@ -56,15 +71,25 @@ export const AuthProvider = ({ children }) => {
   //   - User logs out
   //   - Session expires
   useEffect(() => {
-    // Get the current session on first load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfile(session.user.id).finally(() => setLoading(false));
-      } else {
+    const restoreSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          const profileData = await fetchProfile(session.user.id);
+          if (!profileData) await clearSession();
+        }
+      } catch (err) {
+        console.error("Error restoring session:", err);
+        await clearSession();
+      } finally {
         setLoading(false);
       }
-    });
+    };
+
+    restoreSession();
 
     // Listen for future auth changes (login/logout)
     const {
@@ -78,7 +103,13 @@ export const AuthProvider = ({ children }) => {
         // We only fetch profile for other events like TOKEN_REFRESHED
         // or when the app loads with an existing session (INITIAL_SESSION).
         if (event !== "SIGNED_IN") {
-          await fetchProfile(session.user.id);
+          try {
+            const profileData = await fetchProfile(session.user.id);
+            if (!profileData) clearSessionAfterAuthEvent();
+          } catch (err) {
+            console.error("Error fetching profile:", err);
+            clearSessionAfterAuthEvent();
+          }
         }
       } else {
         // User logged out — clear everything
@@ -104,7 +135,22 @@ export const AuthProvider = ({ children }) => {
       const data = await signIn(email, password);
 
       // Fetch profile BEFORE navigation
-      const profileData = await fetchProfile(data.user.id);
+      let profileData;
+      try {
+        profileData = await fetchProfile(data.user.id);
+      } catch (err) {
+        await clearSession();
+        throw new Error("We couldn't verify your account. Please try again.");
+      }
+
+      if (!profileData) {
+        await clearSession();
+        const error = new Error(
+          "This account no longer exists. Please sign up again.",
+        );
+        error.code = "PROFILE_NOT_FOUND";
+        throw error;
+      }
 
       toast.success(`Welcome back, ${profileData?.full_name || "User"}!`);
 
