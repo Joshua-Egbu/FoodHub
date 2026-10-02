@@ -44,12 +44,12 @@ const AddReviewForm = ({ restaurantId, onReviewAdded }) => {
 
     setIsSubmitting(true);
     try {
-      const newReview = await addReview(
-        restaurantId,
-        user.id,
-        rating,
-        comment.trim(),
-      );
+      const newReview = await addReview({
+        restaurant_id: restaurantId,
+        user_id: user.id,
+        rating: rating,
+        comment: comment.trim(),
+      });
 
       toast.success("Review submitted! Thank you 🙏");
 
